@@ -14,6 +14,12 @@ import static org.junit.Assert.*;
  * Instrumentation test, which will execute on an Android device.
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ *
+ * In this project, we primarily use this test framework to grab UI/images for creating UI dataset
+ * It's a forked project from https://github.com/Eaway/AppCrawler.
+ *
+ * UICrawler fixes bugs and supports dumping XML and images
+ *
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
@@ -27,9 +33,19 @@ public class ExampleInstrumentedTest {
         assertEquals("bach.jianxu.uicrawler", appContext.getPackageName());
     }
 
+    /**
+     * The entry point of UICrawler...
+     */
     @Test
     public void testMain() {
-        Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
 
+        Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
+        DepthFirstCrawler crawler = new DepthFirstCrawler();
+
+        try {
+            crawler.run();
+        } catch (IllegalStateException e) {
+            Log.v(TAG, "IllegalStateException: UiAutomation not connected!");
+        }
     }
 }
