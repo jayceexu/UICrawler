@@ -61,6 +61,8 @@ public class UiScreen {
         } catch (UiObjectNotFoundException e) {
             e.printStackTrace();
         }
+        if (pkg == null)
+            return;
         signature = "";
         name = device.getCurrentActivityName(); // FIXME: deprecated
         depth = (parentScreen == null) ? 0 : parentScreen.depth + 1;

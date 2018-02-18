@@ -197,7 +197,7 @@ public class DepthFirstCrawler {
 
     public void handleOtherPackage(UiScreen currentScreen) {
         if (isNewScreen(currentScreen)) {
-            Utility.takeScreenshots("(" + currentScreen.pkg + ")");
+            Utility.takeScreenshots(currentScreen.pkg);
             currentScreen.widgetList.clear();
             currentScreen.setFinished(true);
             sScannedScreenList.add(currentScreen);

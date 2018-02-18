@@ -3,6 +3,7 @@ package bach.jianxu.uicrawler;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
@@ -17,6 +18,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Random;
+
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * UiAutomator helper
@@ -56,7 +59,7 @@ public class Utility {
     }
 
     public static boolean handleCommonDialog() {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         UiObject button = null;
         for (String keyword : Config.COMMON_BUTTONS) {
             button = device.findObject(new UiSelector().text(keyword).enabled(true));
@@ -79,7 +82,7 @@ public class Utility {
     }
 
     public static void inputRandomTextToEditText() {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         UiObject edit = null;
         int i = 0;
         do {
@@ -97,7 +100,7 @@ public class Utility {
     }
 
     public static boolean isInTargetApp() {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         String pkg = device.getCurrentPackageName();
         if (pkg != null && 0 == pkg.compareToIgnoreCase(Config.sTargetPackage)) {
             return true;
@@ -119,7 +122,7 @@ public class Utility {
     }
 
     public static boolean isInTheSameScreen(UiScreen target) {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         UiObject root = device.findObject(new UiSelector().packageName(Config.sTargetPackage));
         if (root == null || !root.exists()) {
             Log.e(TAG, "Fail to get screen root object");
@@ -141,7 +144,7 @@ public class Utility {
     public static boolean launchApp(String targetPackage) {
         Log.i(TAG_MAIN, "{Launch} " + targetPackage);
 
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         String launcherPackage = device.getLauncherPackageName();
         if (launcherPackage.compareToIgnoreCase(targetPackage) == 0) {
             launchHome();
@@ -158,7 +161,7 @@ public class Utility {
             Log.e(TAG, err);
             Bundle bundle = new Bundle();
             bundle.putString("ERROR", err);
-            InstrumentationRegistry.getInstrumentation().finish(1, bundle);
+            getInstrumentation().finish(1, bundle);
         }
         return true;
     }
@@ -166,7 +169,7 @@ public class Utility {
     public static void launchHome() {
         Log.i(TAG_MAIN, "{Press} Home");
 
-        UiDevice uidevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice uidevice = UiDevice.getInstance(getInstrumentation());
         uidevice.pressHome();
         String launcherPackage = uidevice.getLauncherPackageName();
         uidevice.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), Config.sLaunchTimeout);
@@ -183,7 +186,7 @@ public class Utility {
     public static void takeScreenshots(String message) {
         //Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
 
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
         device.waitForIdle(Config.sWaitIdleTimeout);
 
         String activity = device.getCurrentActivityName(); // FIXME: deprecated

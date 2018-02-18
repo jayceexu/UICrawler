@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.test.uiautomator.Configurator;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
@@ -16,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,12 +51,8 @@ public class CrawlerMain {
         assertEquals("bach.jianxu.uicrawler", appContext.getPackageName());
     }
 
-    /**
-     * The entry point of UICrawler...
-     */
-    @Test
-    public void testMain() {
-
+    @BeforeClass
+    public static void beforeClass() {
         // Create screenshot folder
         File path = Environment.getExternalStorageDirectory();
         Config.sOutputDir = new File(String.format("%s/uicrawler/%s", path.getAbsolutePath(), Config.sTargetPackage));
@@ -64,6 +62,28 @@ public class CrawlerMain {
                 return;
             }
         }
+
+        //  Set timeout longer so we can see the ANR dialog?
+        Configurator conf = Configurator.getInstance();
+        conf.setActionAcknowledgmentTimeout(200L); // Generally, this timeout should not be modified, default 3000
+        conf.setScrollAcknowledgmentTimeout(100L); // Generally, this timeout should not be modified, default 200
+        conf.setWaitForIdleTimeout(0L);
+        conf.setWaitForSelectorTimeout(0L);
+
+        // Register UiWatchers: ANR, CRASH, ....
+        Utility.registerAnrAndCrashWatchers();
+
+        // Good practice to start from the home screen (launcher)
+        Utility.launchHome();
+    }
+
+    /**
+     * The entry point of UICrawler...
+     */
+    @Test
+    public void testMain() {
+
+
         Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
         DepthFirstCrawler crawler = new DepthFirstCrawler();
 
