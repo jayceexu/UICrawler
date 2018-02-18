@@ -1,13 +1,28 @@
 package bach.jianxu.uicrawler;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiSelector;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static org.junit.Assert.*;
 
 /**
@@ -22,13 +37,14 @@ import static org.junit.Assert.*;
  *
  */
 @RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
+@SdkSuppress(minSdkVersion = 18)
+public class CrawlerMain {
     private static final String TAG = "UICrawler";
 
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = getTargetContext();
 
         assertEquals("bach.jianxu.uicrawler", appContext.getPackageName());
     }
@@ -39,6 +55,15 @@ public class ExampleInstrumentedTest {
     @Test
     public void testMain() {
 
+        // Create screenshot folder
+        File path = Environment.getExternalStorageDirectory();
+        Config.sOutputDir = new File(String.format("%s/uicrawler/%s", path.getAbsolutePath(), Config.sTargetPackage));
+        if (!Config.sOutputDir.exists()) {
+            if (!Config.sOutputDir.mkdirs()) {
+                Log.e(TAG, "Failed to create screenshot folder: " + Config.sOutputDir.getPath());
+                return;
+            }
+        }
         Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
         DepthFirstCrawler crawler = new DepthFirstCrawler();
 
