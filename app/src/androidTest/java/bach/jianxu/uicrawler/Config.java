@@ -23,9 +23,9 @@ public class Config {
     public static boolean sRandomText = true;
 
     public static File sOutputDir;
-    public static String sFileLog;
-    public static String sPerformanceLog;
+    public static String sOutputDirName = "/sdcard/uicrawler/";
 
+    // TODO: add package lists
     public static String sTargetPackage = "com.spotify.music";
     //public static String sTargetPackage = "com.google.android.apps.wearable.settings";
 

@@ -345,15 +345,6 @@ public class DepthFirstCrawler {
         return true;
     }
 
-    public boolean isAllScreenFinished() {
-        for (int i = 0; i < sScannedScreenList.size(); i++) {
-            UiScreen screen = sScannedScreenList.get(i);
-            if (!screen.isFinished()) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public void logAllScreenInfo() {
         for (int i = 0; i < sScannedScreenList.size(); i++) {

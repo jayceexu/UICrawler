@@ -87,7 +87,7 @@ public class UiScreen {
         conf.setActionAcknowledgmentTimeout(ActionAcknowledgmentTimeout);
         conf.setScrollAcknowledgmentTimeout(ScrollAcknowledgmentTimeout);
 
-        if (0 != pkg.compareToIgnoreCase(Config.sTargetPackage)) {
+        if (0 != Config.sTargetPackage.compareToIgnoreCase(pkg)) {
             return;
         }
 

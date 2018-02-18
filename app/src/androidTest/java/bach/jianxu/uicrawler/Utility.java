@@ -2,7 +2,9 @@ package bach.jianxu.uicrawler;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
@@ -13,6 +15,7 @@ import android.support.test.uiautomator.Until;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Random;
 
 /**
@@ -191,7 +194,13 @@ public class Utility {
         }
 
         // Dump window hierarchy for debug, remove it for better performance
-        //device.dumpWindowHierarchy(new File(String.format("%s/%d - %s.xml", sOutputDir, sScreenshotIndex, activity)));
+        try {
+            String fname = String.format("%s/%d_%s.xml", Config.sOutputDirName, sScreenshotIndex, activity);
+            device.dumpWindowHierarchy(new File(fname));
+            Log.i(TAG, "Dumping xml " + fname);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (message.length() > 50) {
             message = message.substring(0, 49);
@@ -199,15 +208,47 @@ public class Utility {
 
         sLastFilename = "";
         if (message.length() > 0) {
-            sLastFilename = String.format("(%d) %s %s.png",
-                    sScreenshotIndex, toValidFileName(activity), toValidFileName(message));
+            sLastFilename = String.format("%s_%s_%d.png",
+                    toValidFileName(activity), toValidFileName(message), sScreenshotIndex);
         } else {
-            sLastFilename = String.format("(%d) %s.png",
-                    sScreenshotIndex, toValidFileName(activity));
+            sLastFilename = String.format("%s_%d.png", toValidFileName(activity), sScreenshotIndex);
         }
-        device.takeScreenshot(new File(Config.sOutputDir + "/" + sLastFilename));
+        device.takeScreenshot(new File(Config.sOutputDirName + "/" + sLastFilename));
+        Log.i(TAG, "Screenshot stored at " + Config.sOutputDirName + "/" + sLastFilename);
         sScreenshotIndex++;
         Log.i(TAG_MAIN, "{Screenshot} " + sLastFilename);
     }
+
+    // imageName does not need a file extension like .png, just the name
+    public static void storeBitmap(Bitmap bitmap, String folder, String imageName) {
+        try {
+            //create app folder
+            File sdcard = Environment.getExternalStorageDirectory();
+            File dir = new File(sdcard.getPath() + File.separator + folder);
+            String appFolder = "";
+
+            boolean isDirCreated = dir.exists() || dir.mkdirs();
+
+            if (isDirCreated) {
+                appFolder = dir.getPath();
+                Log.d(TAG, "dir created success:" + appFolder);
+            } else {
+                Log.e(TAG, "dir failed to create");
+            }
+
+            File imageFile = new File(appFolder + File.separator + imageName + ".jpg");
+
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+
+            outputStream.flush();
+            outputStream.close();
+
+        } catch (Throwable e) {
+            // Several error may come out with file handling or OOM
+            e.printStackTrace();
+        }
+    }
+
 
 }
