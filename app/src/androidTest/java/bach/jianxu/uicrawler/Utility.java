@@ -198,7 +198,7 @@ public class Utility {
 
         // Dump window hierarchy for debug, remove it for better performance
         try {
-            String fname = String.format("%s/%d_%s.xml", Config.sOutputDirName, sScreenshotIndex, activity);
+            String fname = String.format("%s/%d_%s.xml", Config.sOutputDir.getAbsoluteFile(), sScreenshotIndex, activity);
             device.dumpWindowHierarchy(new File(fname));
             Log.i(TAG, "Dumping xml " + fname);
         } catch (Exception e) {
@@ -211,13 +211,13 @@ public class Utility {
 
         sLastFilename = "";
         if (message.length() > 0) {
-            sLastFilename = String.format("%s_%s_%d.png",
-                    toValidFileName(activity), toValidFileName(message), sScreenshotIndex);
+            sLastFilename = String.format("%d_%s_%s.png",
+                    sScreenshotIndex, toValidFileName(activity), toValidFileName(message));
         } else {
-            sLastFilename = String.format("%s_%d.png", toValidFileName(activity), sScreenshotIndex);
+            sLastFilename = String.format("%d_%s.png", sScreenshotIndex, toValidFileName(activity));
         }
-        device.takeScreenshot(new File(Config.sOutputDirName + "/" + sLastFilename));
-        Log.i(TAG, "Screenshot stored at " + Config.sOutputDirName + "/" + sLastFilename);
+        device.takeScreenshot(new File(Config.sOutputDir.getAbsoluteFile() + "/" + sLastFilename));
+        Log.i(TAG, "Screenshot stored at " + Config.sOutputDir.getAbsolutePath() + "/" + sLastFilename);
         sScreenshotIndex++;
         Log.i(TAG_MAIN, "{Screenshot} " + sLastFilename);
     }

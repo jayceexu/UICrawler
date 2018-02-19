@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(AndroidJUnit4.class)
 @SdkSuppress(minSdkVersion = 18)
-public class CrawlerMain {
+public class Main {
     private static final String TAG = "UICrawler";
 
     @Test
