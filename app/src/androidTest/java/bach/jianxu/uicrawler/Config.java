@@ -26,7 +26,8 @@ public class Config {
     public static String sOutputDirName = "/sdcard/uicrawler/";
 
     // TODO: add package lists
-    public static String sTargetPackage = "com.spotify.music";
+    public static String sTargetPackage; // = "com.spotify.music";
+    public static String sCurrentPackage;
     //public static String sTargetPackage = "com.google.android.apps.wearable.settings";
 
 

@@ -39,6 +39,9 @@ public class DepthFirstCrawler {
     private UiDevice mDevice;
 
     public void run() {
+        if (Config.sTargetPackage == null)
+            return;
+
         sDepth = 0;
         sSteps = 0;
         sLoop = 0;
@@ -48,6 +51,7 @@ public class DepthFirstCrawler {
         sLastScreen = null;
         sLastActionWidget = null;
         sLastActionMessage = "";
+        sScannedScreenList.clear();
         sFinished = false;
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
@@ -55,145 +59,150 @@ public class DepthFirstCrawler {
         if (!Utility.launchTargetApp())
             return;
 
-        while (!sFinished) {
-            sSteps++;
+        try {
+            while (!sFinished) {
+                sSteps++;
 
-            // Get current screen
-            UiScreen currentScreen = new UiScreen(sLastScreen, sLastActionWidget);
-            currentScreen.id = sScannedScreenList.size() + 1;
+                // Get current screen
+                UiScreen currentScreen = new UiScreen(sLastScreen, sLastActionWidget);
+                currentScreen.id = sScannedScreenList.size() + 1;
 
-            // In the different app
-            if (currentScreen.pkg.compareTo(Config.sTargetPackage) != 0) {
-                Log.i(TAG_MAIN, "Now we are in the different package: " + currentScreen.pkg);
-                handleOtherPackage(currentScreen);
-                continue;
-            }
-
-            // In target app, check where are we now.
-            boolean newScreen = true;
-            for (UiScreen screen : sScannedScreenList) {
-                if (screen.equals(currentScreen)) {
-                    newScreen = false;
-                    currentScreen = screen;
-                    sDepth = currentScreen.depth;
-                    break;
-                }
-            }
-
-            if (sDepth == 0) {
-                if (sRootScreen != null) {
-                    Log.i(TAG, "Root screen changed");
-                }
-                sRootScreen = currentScreen;
-            }
-
-            // New screen?
-            if (newScreen) {
-                handleNewScreen(currentScreen);
-                sLoop = 0;
-            } else {
-                handleOldScreen(currentScreen);
-                if (++sLoop > Config.sMaxScreenLoop) {
-                    Log.i(TAG, "Reached max old screen loop, re-launch target app");
-                    sLoop = 0;
-                    Utility.launchTargetApp();
+                // In the different app
+                if (currentScreen.pkg == null || currentScreen.pkg.compareTo(Config.sTargetPackage) != 0) {
+                    Log.i(TAG_MAIN, "Now we are in the different package: " + currentScreen.pkg);
+                    handleOtherPackage(currentScreen);
                     continue;
                 }
-            }
 
-            // If there have unfinished widgets, mark all ascendant screens unfinished, so we have chance to go back.
-            if (!currentScreen.isFinished()) {
-                UiScreen screen = currentScreen;
-                do {
-                    if (screen.parentWidget != null)
-                        screen.parentWidget.setFinished(false);
-                    if (screen.parentScreen != null)
-                        screen.parentScreen.setFinished(false);
-                    screen = screen.parentScreen;
-                } while (screen != null);
-            }
-
-            // Typing random text to EditText if any
-            if (Config.sRandomText) {
-                Utility.inputRandomTextToEditText();
-            }
-
-            // Handle  next unfinished widget
-            handleNextWidget(currentScreen);
-
-            // Check finish
-            if (currentScreen.isFinished()) {
-                Log.d(TAG, "Screen[" + currentScreen.id + "] finished");
-
-                // Update parent screens
-                UiScreen screen = currentScreen;
-                do {
-                    if (screen.parentWidget != null)
-                        screen.parentWidget.setFinished(true);
-                    if (screen.parentScreen != null) {
-                        if (!screen.parentScreen.isFinished())
-                            break;
+                // In target app, check where are we now.
+                boolean newScreen = true;
+                for (UiScreen screen : sScannedScreenList) {
+                    if (screen.equals(currentScreen)) {
+                        newScreen = false;
+                        currentScreen = screen;
+                        sDepth = currentScreen.depth;
+                        break;
                     }
-                    screen = screen.parentScreen;
-                } while (screen != null);
+                }
 
-                if (currentScreen == sRootScreen) {
-                    // Root screen is finished.
-                    // We should check the last widget we clicked brings us to some where new?
-                    // For example, a first-run-wizard that will lead us to the real root screen.
-                    if (isNewTargetPkgScreen()) {
-                        // The root screen may be a first-run-wizard, Tips-of-the-day
-                        if (sLastActionWidget != null)
-                            sLastActionWidget.setFinished(false);
-                        sRootScreen.setFinished(false);
-                    } else {
-                        Log.i(TAG_MAIN, "{Stop} root screen finished, id:" + sRootScreen.id);
-                        sFinished = true;
+                if (sDepth == 0) {
+                    if (sRootScreen != null) {
+                        Log.i(TAG, "Root screen changed");
                     }
+                    sRootScreen = currentScreen;
+                }
+
+                // New screen?
+                if (newScreen) {
+                    handleNewScreen(currentScreen);
+                    sLoop = 0;
                 } else {
-                    if (Utility.isInTheSameScreen(currentScreen)) {
-                        Log.i(TAG_MAIN, "{Click} Back");
-                        mDevice.pressBack();
+                    handleOldScreen(currentScreen);
+                    if (++sLoop > Config.sMaxScreenLoop) {
+                        Log.i(TAG, "Reached max old screen loop, re-launch target app");
+                        sLoop = 0;
+                        Utility.launchTargetApp();
+                        continue;
                     }
+                }
+
+                // If there have unfinished widgets, mark all ascendant screens unfinished, so we have chance to go back.
+                if (!currentScreen.isFinished()) {
+                    UiScreen screen = currentScreen;
+                    do {
+                        if (screen.parentWidget != null)
+                            screen.parentWidget.setFinished(false);
+                        if (screen.parentScreen != null)
+                            screen.parentScreen.setFinished(false);
+                        screen = screen.parentScreen;
+                    } while (screen != null);
+                }
+
+                // Typing random text to EditText if any
+                if (Config.sRandomText) {
+                    Utility.inputRandomTextToEditText();
+                }
+
+                // Handle  next unfinished widget
+                handleNextWidget(currentScreen);
+
+                // Check finish
+                if (currentScreen.isFinished()) {
+                    Log.d(TAG, "Screen[" + currentScreen.id + "] finished");
+
+                    // Update parent screens
+                    UiScreen screen = currentScreen;
+                    do {
+                        if (screen.parentWidget != null)
+                            screen.parentWidget.setFinished(true);
+                        if (screen.parentScreen != null) {
+                            if (!screen.parentScreen.isFinished())
+                                break;
+                        }
+                        screen = screen.parentScreen;
+                    } while (screen != null);
+
+                    if (currentScreen == sRootScreen) {
+                        // Root screen is finished.
+                        // We should check the last widget we clicked brings us to some where new?
+                        // For example, a first-run-wizard that will lead us to the real root screen.
+                        if (isNewTargetPkgScreen()) {
+                            // The root screen may be a first-run-wizard, Tips-of-the-day
+                            if (sLastActionWidget != null)
+                                sLastActionWidget.setFinished(false);
+                            sRootScreen.setFinished(false);
+                        } else {
+                            Log.i(TAG_MAIN, "{Stop} root screen finished, id:" + sRootScreen.id);
+                            sFinished = true;
+                        }
+                    } else {
+                        if (Utility.isInTheSameScreen(currentScreen)) {
+                            Log.i(TAG_MAIN, "{Click} Back");
+                            mDevice.pressBack();
+                        }
+                    }
+                }
+
+                // Max run time
+                if ((new Date().getTime() - sStartTime.getTime()) / 1000 > Config.sMaxRuntime) {
+                    Log.i(TAG_MAIN, "{Stop} reached max run-time second: " + Config.sMaxRuntime);
+                    sFinished = true;
+                }
+
+                //  Max screen files
+                if (Utility.sScreenshotIndex >= Config.sMaxScreenshot - 1) {
+                    Log.i(TAG_MAIN, "{Stop} reached max screenshot files.");
+                    sFinished = true;
+                }
+
+                // Max test steps
+                if (sSteps >= Config.sMaxSteps) {
+                    Log.i(TAG_MAIN, "{Stop} reached max screenshot files.");
+                    sFinished = true;
+                }
+
+                // Avoid infinite loop
+                if (++currentScreen.loop > Config.sMaxScreenLoop) {
+                    Log.i(TAG, "Reached max screen loop, set screen finished");
+                    currentScreen.setFinished(true);
+                }
+
+                // Debug
+                if (Config.sDebug) {
+                    logAllScreenInfo();
                 }
             }
 
-            // Max run time
-            if ((new Date().getTime() - sStartTime.getTime()) / 1000 > Config.sMaxRuntime) {
-                Log.i(TAG_MAIN, "{Stop} reached max run-time second: " + Config.sMaxRuntime);
-                sFinished = true;
-            }
-
-            //  Max screen files
-            if (Utility.sScreenshotIndex >= Config.sMaxScreenshot - 1) {
-                Log.i(TAG_MAIN, "{Stop} reached max screenshot files.");
-                sFinished = true;
-            }
-
-            // Max test steps
-            if (sSteps >= Config.sMaxSteps) {
-                Log.i(TAG_MAIN, "{Stop} reached max screenshot files.");
-                sFinished = true;
-            }
-
-            // Avoid infinite loop
-            if (++currentScreen.loop > Config.sMaxScreenLoop) {
-                Log.i(TAG, "Reached max screen loop, set screen finished");
-                currentScreen.setFinished(true);
-            }
-
-            // Debug
-            if (Config.sDebug) {
-                logAllScreenInfo();
-            }
+            // Done
+            Log.i(TAG_MAIN, "Total executed steps:" + sSteps +
+                    ", peak depth:" + sDepthPeak +
+                    ", detected screens:" + sScannedScreenList.size() +
+                    ", screenshot:" + Utility.sScreenshotIndex);
+        } catch(Exception e) {
+            e.printStackTrace();
         }
-
-        // Done
-        Log.i(TAG_MAIN, "Total executed steps:" + sSteps +
-                ", peak depth:" + sDepthPeak +
-                ", detected screens:" + sScannedScreenList.size() +
-                ", screenshot:" + Utility.sScreenshotIndex);
     }
+
 
     public void handleOtherPackage(UiScreen currentScreen) {
         if (isNewScreen(currentScreen)) {

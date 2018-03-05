@@ -2,6 +2,7 @@ package bach.jianxu.uicrawler;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -15,8 +16,13 @@ import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
@@ -205,7 +211,9 @@ public class Utility {
             e.printStackTrace();
         }
 
-        if (message.length() > 50) {
+        if (message == null) {
+            message = "";
+        } else if (message.length() > 50) {
             message = message.substring(0, 49);
         }
 
@@ -253,5 +261,29 @@ public class Utility {
         }
     }
 
+    public static HashSet<String> readText() {
+
+        StringBuilder text = new StringBuilder();
+        HashSet<String> apps = new HashSet<>();
+        try {
+            File sdcard = Environment.getExternalStorageDirectory();
+            File file = new File(sdcard,"app_list");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line == "" || line == null)
+                    continue;
+                text.append(line);
+                text.append('\n');
+                apps.add(line);
+            }
+            br.close() ;
+            Log.d(TAG, "READ file " + text);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return apps;
+
+    }
 
 }

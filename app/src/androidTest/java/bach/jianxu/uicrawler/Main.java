@@ -22,6 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.InstrumentationRegistry.getTargetContext;
@@ -53,15 +56,6 @@ public class Main {
 
     @BeforeClass
     public static void beforeClass() {
-        // Create screenshot folder
-        File path = Environment.getExternalStorageDirectory();
-        Config.sOutputDir = new File(String.format("%s/uicrawler/%s", path.getAbsolutePath(), Config.sTargetPackage));
-        if (!Config.sOutputDir.exists()) {
-            if (!Config.sOutputDir.mkdirs()) {
-                Log.e(TAG, "Failed to create screenshot folder: " + Config.sOutputDir.getPath());
-                return;
-            }
-        }
 
         //  Set timeout longer so we can see the ANR dialog?
         Configurator conf = Configurator.getInstance();
@@ -77,20 +71,38 @@ public class Main {
         Utility.launchHome();
     }
 
+
+
     /**
      * The entry point of UICrawler...
      */
     @Test
     public void testMain() {
-
-
         Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
-        DepthFirstCrawler crawler = new DepthFirstCrawler();
 
-        try {
-            crawler.run();
-        } catch (IllegalStateException e) {
-            Log.v(TAG, "IllegalStateException: UiAutomation not connected!");
+        HashSet<String> apps = Utility.readText();
+
+        for (String app : apps) {
+            Log.i(TAG, "Crawling app: " + app);
+            Config.sTargetPackage = app;
+
+            // Create screenshot folder
+            File path = Environment.getExternalStorageDirectory();
+            Config.sOutputDir = new File(String.format("%s/uicrawler/%s", path.getAbsolutePath(), Config.sTargetPackage));
+            if (!Config.sOutputDir.exists()) {
+                if (!Config.sOutputDir.mkdirs()) {
+                    Log.e(TAG, "Failed to create screenshot folder: " + Config.sOutputDir.getPath());
+                    return;
+                }
+            }
+
+            DepthFirstCrawler crawler = new DepthFirstCrawler();
+            try {
+                crawler.run();
+            } catch (IllegalStateException e) {
+                Log.v(TAG, "IllegalStateException: UiAutomation not connected!");
+            }
         }
+
     }
 }
