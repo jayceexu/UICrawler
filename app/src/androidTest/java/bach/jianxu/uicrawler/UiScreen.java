@@ -17,7 +17,8 @@ import static org.junit.Assert.assertThat;
 
 /**
  * UiScreen represent a unique screen that is worth testing.
- * UI of Android Activity acn change  dynamically (e.g. using Fragment), thus one Activity may produce more than one UiScreens
+ * UI of Android Activity can change dynamically (e.g. using Fragment),
+ * thus a Activity may consists of more than one UiScreens
  */
 public class UiScreen {
     private static final String TAG = Config.TAG;

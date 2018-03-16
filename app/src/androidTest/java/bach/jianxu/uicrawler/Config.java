@@ -13,7 +13,7 @@ public class Config {
     public static int sWaitIdleTimeout = 100;
     public static int sMaxDepth = 30;
     public static int sMaxSteps = 999;
-    public static int sMaxRuntime = 3600;
+    public static int sMaxRuntime = 600;
     public static int sMaxScreenshot = 999;
     public static int sMaxScreenLoop = 20;
     public static int sScreenSignatueLength = 160;
@@ -33,7 +33,7 @@ public class Config {
 
     // Activities to be ignored
     public static final String[] IGNORED_ACTIVITY = {
-            "Feedback & Help"
+            "feedback", "help"
     };
 
     // Common buttons that we can handle.

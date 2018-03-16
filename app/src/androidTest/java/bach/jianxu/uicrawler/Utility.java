@@ -120,7 +120,7 @@ public class Utility {
 
     public static boolean isInIgnoredActivity(String activityName) {
         for (String ignore : Config.IGNORED_ACTIVITY) {
-            if (0 == ignore.compareTo(activityName)) {
+            if (activityName.toLowerCase().contains(ignore.toLowerCase())) {
                 return true;
             }
         }
@@ -187,8 +187,7 @@ public class Utility {
         return input.replaceAll("[:\\\\/*\"?|<>']", "_");
     }
 
-    // Take screenshots in Landscape and Portrait
-    // TODO: Take screenshot for both portrait and landscape
+    // Take screenshot and xml files in /sdcard/uicrawler/
     public static void takeScreenshots(String message) {
         //Log.v(TAG, new Exception().getStackTrace()[0].getMethodName() + "()");
 
